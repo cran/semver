@@ -2,7 +2,7 @@ semver
 ==========================
 | CRAN version       | Travis build status   | Appveyor build status   | Coverage |
 | :-------------: |:-------------:|:-------------:|:-------------:|
-| | [![Build Status](https://travis-ci.org/johndharrison/semver.svg?branch=master)](https://travis-ci.org/johndharrison/semver) | [![AppVeyor Build Status](https://ci.appveyor.com/api/projects/status/github/johndharrison/semver?branch=master&svg=true)](https://ci.appveyor.com/project/johndharrison/semver) | [![codecov](https://codecov.io/gh/johndharrison/semver/branch/master/graph/badge.svg)](https://codecov.io/gh/johndharrison/semver)|
+| [![CRAN version](http://www.r-pkg.org/badges/version/semver)](https://cran.r-project.org/package=semver) | [![Build Status](https://travis-ci.org/johndharrison/semver.svg?branch=master)](https://travis-ci.org/johndharrison/semver) | [![AppVeyor Build Status](https://ci.appveyor.com/api/projects/status/github/johndharrison/semver?branch=master&svg=true)](https://ci.appveyor.com/project/johndharrison/semver) | [![codecov](https://codecov.io/gh/johndharrison/semver/branch/master/graph/badge.svg)](https://codecov.io/gh/johndharrison/semver)|
 
 ## Installation
 
@@ -22,7 +22,7 @@ and operating on semantic version strings. Semantic versioning is a simple
 set of rules and requirements that dictate how version numbers are 
 assigned and incremented as outlined at [http://semver.org](http://semver.org).
 
-A basic summary of how semantiv versioning operates is given a version number MAJOR.MINOR.PATCH, increment the:
+A basic summary of how semantic versioning operates is given a version number MAJOR.MINOR.PATCH, increment the:
 
 1. MAJOR version when you make incompatible API changes,
 2. MINOR version when you add functionality in a backwards-compatible manner, and
@@ -68,3 +68,5 @@ range(semver)
 as.character(semver)
 as.data.frame(semver)
 ```
+
+For more detail see the vignette [semver: Basics](https://CRAN.R-project.org/package=semver/vignettes/basics.html)

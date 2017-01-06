@@ -12,7 +12,7 @@
 
 <meta name="author" content="John D Harrison" />
 
-<meta name="date" content="2017-01-02" />
+<meta name="date" content="2017-01-06" />
 
 <title>semver: Basics</title>
 
@@ -70,17 +70,22 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 
 <h1 class="title toc-ignore">semver: Basics</h1>
 <h4 class="author"><em>John D Harrison</em></h4>
-<h4 class="date"><em>2017-01-02</em></h4>
+<h4 class="date"><em>2017-01-06</em></h4>
 
 
 <div id="TOC">
 <ul>
 <li><a href="#introduction">Introduction</a></li>
 <li><a href="#semver-package"><code>semver</code> package</a><ul>
-<li><a href="#all-the-functions">All the functions</a></li>
+<li><a href="#parsingrendering-semantic-versions">Parsing/Rendering semantic versions</a></li>
 <li><a href="#comparing-versions">Comparing versions</a></li>
-</ul></li>
 <li><a href="#compare-to-character-strings">Compare to character strings</a></li>
+</ul></li>
+<li><a href="#updating-versions">Updating versions</a><ul>
+<li><a href="#set_version">set_version</a></li>
+<li><a href="#reset_version">reset_version</a></li>
+<li><a href="#increment_version">increment_version</a></li>
+</ul></li>
 </ul>
 </div>
 
@@ -88,7 +93,7 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 <div id="introduction" class="section level2">
 <h2>Introduction</h2>
 <p>The <code>semver</code> package provides tools and functions for parsing, rendering and operating on semantic version strings. Semantic versioning is a simple set of rules and requirements that dictate how version numbers are assigned and incremented as outlined at <a href="http://semver.org" class="uri">http://semver.org</a>.</p>
-<p>A basic summary of how semantiv versioning operates is given a version number MAJOR.MINOR.PATCH, increment the:</p>
+<p>A basic summary of how semantic versioning operates is given a version number MAJOR.MINOR.PATCH, increment the:</p>
 <ol style="list-style-type: decimal">
 <li>MAJOR version when you make incompatible API changes,</li>
 <li>MINOR version when you add functionality in a backwards-compatible manner, and</li>
@@ -99,8 +104,8 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 <div id="semver-package" class="section level2">
 <h2><code>semver</code> package</h2>
 <p>The <code>semver</code> package provides a wrapper for the C++14 semantic versioning parser written by Marko Živanović. The project is currently hosted on <a href="https://github.com/zmarko/semver">github</a>. The <a href="https://github.com/RcppCore/Rcpp">Rcpp package</a> was used to provide R bindings. Some changes were made on the C++ side as currently CRAN does not accept packages compiling under C++14 (R version 3.4.0 should allow this in future).</p>
-<div id="all-the-functions" class="section level3">
-<h3>All the functions</h3>
+<div id="parsingrendering-semantic-versions" class="section level3">
+<h3>Parsing/Rendering semantic versions</h3>
 <div id="parse_version" class="section level4">
 <h4>parse_version</h4>
 <p>The <code>parse_version</code> function parses a character vector containing valid semantic versioning strings returning an “svlist” object.</p>
@@ -245,9 +250,8 @@ sem_versions[[<span class="dv">3</span>]] ==<span class="st"> </span>sem_version
 <pre><code>## [1] FALSE  TRUE FALSE FALSE  TRUE  TRUE</code></pre>
 </div>
 </div>
-</div>
-<div id="compare-to-character-strings" class="section level2">
-<h2>Compare to character strings</h2>
+<div id="compare-to-character-strings" class="section level3">
+<h3>Compare to character strings</h3>
 <p>Sometimes it can be useful to compare a parsed vector of semantic versions to a character string:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">sem_versions &gt;<span class="st"> &quot;1.1.0-beta&quot;</span></code></pre></div>
 <pre><code>## [1] FALSE  TRUE FALSE FALSE  TRUE  TRUE</code></pre>
@@ -257,6 +261,186 @@ sem_versions[[<span class="dv">3</span>]] ==<span class="st"> </span>sem_version
 ## [2] Maj: 1 Min: 8 Pat: 2 Pre: beta.1.13
 ## 
 ## [3] Maj: 1 Min: 8 Pat: 2 Pre: beta.1.10</code></pre>
+</div>
+</div>
+<div id="updating-versions" class="section level2">
+<h2>Updating versions</h2>
+<p>If you want to change or ammend the major, minor, patch, prerelease or build fields the semver package provides a number of methods to achieve this.</p>
+<div id="set_version" class="section level3">
+<h3>set_version</h3>
+<p>The <code>set_version</code> method operates on <code>svptr</code> and <code>svlist</code> classes. It simply changes the indicated field to the value given. Other fields in the version are unaffected.</p>
+<div id="svptr" class="section level4">
+<h4>svptr</h4>
+<p>For the <code>svptr</code> class the <code>set_version</code> method takes a character string argument <code>field</code> which indicates which field (major, minor etc.) to change. The <code>value</code> argument is an integer scalar when field is major, minor or patch and a character string when prerelease or build.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(semver)
+examples &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;1.0.0&quot;</span>, <span class="st">&quot;2.1.3&quot;</span>, <span class="st">&quot;1.0.0-alpha&quot;</span>, <span class="st">&quot;1.0.0-alpha+1.2&quot;</span>, 
+              <span class="st">&quot;1.8.2-beta.1.13&quot;</span>, <span class="st">&quot;1.8.2-beta.1.10&quot;</span>)
+sem_versions &lt;-<span class="st"> </span><span class="kw">parse_version</span>(examples)
+<span class="kw">set_version</span>(sem_versions[[<span class="dv">1</span>]], <span class="st">&quot;major&quot;</span>, 2L)</code></pre></div>
+<pre><code>## Maj: 2 Min: 0 Pat: 0</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">set_version</span>(sem_versions[[<span class="dv">1</span>]], <span class="st">&quot;minor&quot;</span>, 1L)</code></pre></div>
+<pre><code>## Maj: 1 Min: 1 Pat: 0</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">set_version</span>(sem_versions[[<span class="dv">1</span>]], <span class="st">&quot;patch&quot;</span>, 1L)</code></pre></div>
+<pre><code>## Maj: 1 Min: 0 Pat: 1</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">set_version</span>(sem_versions[[<span class="dv">4</span>]], <span class="st">&quot;prerelease&quot;</span>, <span class="st">&quot;beta&quot;</span>)</code></pre></div>
+<pre><code>## Maj: 1 Min: 0 Pat: 0 Pre: beta Bld: 1.2</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">set_version</span>(sem_versions[[<span class="dv">4</span>]], <span class="st">&quot;build&quot;</span>, <span class="st">&quot;bld1a&quot;</span>)</code></pre></div>
+<pre><code>## Maj: 1 Min: 0 Pat: 0 Pre: alpha Bld: bld1a</code></pre>
+<p><strong>Note that changing a field with the set_version method does not change any other field.</strong></p>
+<div id="dollar-assignment" class="section level5">
+<h5>Dollar assignment</h5>
+<p>As syntactic sugar for assigning using <code>set_version</code> there is a dollar assignment method for svptr classes so the following are equivalent waysto assign fields:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">sem_versions[[<span class="dv">1</span>]] &lt;-<span class="st"> </span><span class="kw">set_version</span>(sem_versions[[<span class="dv">1</span>]], <span class="st">&quot;major&quot;</span>, 3L)
+sem_versions[[<span class="dv">1</span>]]</code></pre></div>
+<pre><code>## Maj: 3 Min: 0 Pat: 0</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Syntactic sugar</span>
+sem_versions[[<span class="dv">1</span>]]$minor &lt;-<span class="st"> </span>2L
+sem_versions[[<span class="dv">1</span>]]</code></pre></div>
+<pre><code>## Maj: 3 Min: 2 Pat: 0</code></pre>
+</div>
+</div>
+<div id="svlist" class="section level4">
+<h4>svlist</h4>
+<p>For <code>svlist</code> classes the <code>set_version</code> method expects a character vector for the <code>field</code> argument. The <code>value</code> argument is expected to be a list with integer and character elements assigning to (major, minor, patch)/(prerelease, build) fields respectively. If either the length of the field or values argeument is shorter than the number of elements in the <code>svlist</code> then recycling occurs.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">examples &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;1.0.0&quot;</span>, <span class="st">&quot;1.8.2-beta.1.10&quot;</span>, <span class="st">&quot;2.4.6-8&quot;</span>)
+sem_versions &lt;-<span class="st"> </span><span class="kw">parse_version</span>(examples)
+<span class="co"># recycling on the field argument</span>
+<span class="kw">set_version</span>(sem_versions, <span class="st">&quot;major&quot;</span>, <span class="kw">list</span>(2L, 4L, 6L))</code></pre></div>
+<pre><code>## [1] Maj: 2 Min: 0 Pat: 0
+## 
+## [2] Maj: 4 Min: 8 Pat: 2 Pre: beta.1.10
+## 
+## [3] Maj: 6 Min: 4 Pat: 6 Pre: 8</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># recycling on the value argument</span>
+<span class="kw">set_version</span>(sem_versions, <span class="kw">c</span>(<span class="st">&quot;major&quot;</span>, <span class="st">&quot;minor&quot;</span>, <span class="st">&quot;patch&quot;</span>), <span class="kw">list</span>(7L))</code></pre></div>
+<pre><code>## [1] Maj: 7 Min: 0 Pat: 0
+## 
+## [2] Maj: 1 Min: 7 Pat: 2 Pre: beta.1.10
+## 
+## [3] Maj: 2 Min: 4 Pat: 7 Pre: 8</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># assigning integer and character values</span>
+<span class="kw">set_version</span>(sem_versions, <span class="kw">c</span>(<span class="st">&quot;prerelease&quot;</span>, <span class="st">&quot;minor&quot;</span>, <span class="st">&quot;build&quot;</span>), 
+            <span class="kw">list</span>(<span class="st">&quot;alpha&quot;</span>, 3L, <span class="st">&quot;build1.12&quot;</span>))</code></pre></div>
+<pre><code>## [1] Maj: 1 Min: 0 Pat: 0 Pre: alpha
+## 
+## [2] Maj: 1 Min: 3 Pat: 2 Pre: beta.1.10
+## 
+## [3] Maj: 2 Min: 4 Pat: 6 Pre: 8 Bld: build1.12</code></pre>
+</div>
+</div>
+<div id="reset_version" class="section level3">
+<h3>reset_version</h3>
+<p>The <code>reset_version</code> method operates on <code>svptr</code> and <code>svlist</code> classes. It changes the indicated field to the value given. Fields with lower precedence are set to default values:</p>
+<pre><code>MAJOR(0L) &gt; MINOR (0L) &gt; PATCH (0L) &gt; PRERELEASE (&quot;&quot;) &gt; BUILD (&quot;&quot;)</code></pre>
+<div id="svptr-1" class="section level4">
+<h4>svptr</h4>
+<p>The <code>reset_version</code> method for <code>svptr</code> classes operates similarly to the <code>set_version</code> method with fields of lower precedence being set to default values:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">examples &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;1.8.2-beta.1.10+somebuild&quot;</span>, <span class="st">&quot;2.4.6-8&quot;</span>)
+sem_versions &lt;-<span class="st"> </span><span class="kw">parse_version</span>(examples)
+<span class="kw">reset_version</span>(sem_versions[[<span class="dv">1</span>]], <span class="st">&quot;major&quot;</span>, 2L)</code></pre></div>
+<pre><code>## Maj: 2 Min: 0 Pat: 0</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">reset_version</span>(sem_versions[[<span class="dv">1</span>]], <span class="st">&quot;minor&quot;</span>, 3L)</code></pre></div>
+<pre><code>## Maj: 1 Min: 3 Pat: 0</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">reset_version</span>(sem_versions[[<span class="dv">1</span>]], <span class="st">&quot;patch&quot;</span>, 4L)</code></pre></div>
+<pre><code>## Maj: 1 Min: 8 Pat: 4</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">reset_version</span>(sem_versions[[<span class="dv">1</span>]], <span class="st">&quot;prerelease&quot;</span>, <span class="st">&quot;gamma&quot;</span>)</code></pre></div>
+<pre><code>## Maj: 1 Min: 8 Pat: 2 Pre: gamma</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">reset_version</span>(sem_versions[[<span class="dv">1</span>]], <span class="st">&quot;build&quot;</span>, <span class="st">&quot;superbuild&quot;</span>)</code></pre></div>
+<pre><code>## Maj: 1 Min: 8 Pat: 2 Pre: beta.1.10 Bld: superbuild</code></pre>
+</div>
+<div id="svlist-1" class="section level4">
+<h4>svlist</h4>
+<p>The <code>reset_version</code> method for <code>svlist</code> classes operates similarly to the <code>set_version</code> method with fields of lower precedence being set to default values. Again recycling of elements occur if the length of the field/value argument is shorter than the number of elements in the <code>svlist</code>:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">examples &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;1.8.2-beta.1.10+somebuild&quot;</span>, <span class="st">&quot;2.4.6-8&quot;</span>)
+sem_versions &lt;-<span class="st"> </span><span class="kw">parse_version</span>(examples)
+<span class="co"># recycling on both arguments</span>
+<span class="kw">reset_version</span>(sem_versions, <span class="st">&quot;major&quot;</span>, <span class="kw">list</span>(3L))</code></pre></div>
+<pre><code>## [1] Maj: 3 Min: 0 Pat: 0
+## 
+## [2] Maj: 3 Min: 0 Pat: 0</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># recycling on field argument</span>
+<span class="kw">reset_version</span>(sem_versions, <span class="st">&quot;minor&quot;</span>, <span class="kw">list</span>(3L, 4L))</code></pre></div>
+<pre><code>## [1] Maj: 1 Min: 3 Pat: 0
+## 
+## [2] Maj: 2 Min: 4 Pat: 0</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># recycling on value argument</span>
+<span class="kw">reset_version</span>(sem_versions, <span class="kw">c</span>(<span class="st">&quot;major&quot;</span>, <span class="st">&quot;patch&quot;</span>), <span class="kw">list</span>(4L))</code></pre></div>
+<pre><code>## [1] Maj: 4 Min: 0 Pat: 0
+## 
+## [2] Maj: 2 Min: 4 Pat: 4</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># assigning integer and character fields</span>
+<span class="kw">reset_version</span>(sem_versions, <span class="kw">c</span>(<span class="st">&quot;prerelease&quot;</span>, <span class="st">&quot;minor&quot;</span>), <span class="kw">list</span>(<span class="st">&quot;zeta&quot;</span>, 7L))</code></pre></div>
+<pre><code>## [1] Maj: 1 Min: 8 Pat: 2 Pre: zeta
+## 
+## [2] Maj: 2 Min: 7 Pat: 0</code></pre>
+</div>
+</div>
+<div id="increment_version" class="section level3">
+<h3>increment_version</h3>
+<p>The <code>increment_version</code> method operates on <code>svptr</code> and <code>svlist</code> classes. It increments the given field with the provided value. Fields of lower precedence are set to default value.</p>
+<ol style="list-style-type: decimal">
+<li><p><strong>Only major, minor and patch field can be incremented</strong></p></li>
+<li><p><strong>To decrement a field provide a negative integer as the value argument</strong></p></li>
+</ol>
+<div id="svptr-2" class="section level4">
+<h4>svptr</h4>
+<p>The <code>increment_version</code> method for <code>svptr</code> classes increments the chosen field with the given value with fields of lower precedence being set to default values:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">examples &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;1.8.2-beta.1.10+somebuild&quot;</span>, <span class="st">&quot;2.4.6-8&quot;</span>)
+sem_versions &lt;-<span class="st"> </span><span class="kw">parse_version</span>(examples)
+<span class="co"># incrementing versions</span>
+<span class="kw">increment_version</span>(sem_versions[[<span class="dv">1</span>]], <span class="st">&quot;major&quot;</span>, 1L)</code></pre></div>
+<pre><code>## Maj: 2 Min: 0 Pat: 0</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">increment_version</span>(sem_versions[[<span class="dv">1</span>]], <span class="st">&quot;minor&quot;</span>, 2L)</code></pre></div>
+<pre><code>## Maj: 1 Min: 10 Pat: 0</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">increment_version</span>(sem_versions[[<span class="dv">1</span>]], <span class="st">&quot;patch&quot;</span>, 3L)</code></pre></div>
+<pre><code>## Maj: 1 Min: 8 Pat: 5</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># decrementing versions</span>
+<span class="kw">increment_version</span>(sem_versions[[<span class="dv">1</span>]], <span class="st">&quot;major&quot;</span>, -1L)</code></pre></div>
+<pre><code>## Maj: 0 Min: 0 Pat: 0</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">increment_version</span>(sem_versions[[<span class="dv">1</span>]], <span class="st">&quot;minor&quot;</span>, -2L)</code></pre></div>
+<pre><code>## Maj: 1 Min: 6 Pat: 0</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">increment_version</span>(sem_versions[[<span class="dv">1</span>]], <span class="st">&quot;patch&quot;</span>, -2L)</code></pre></div>
+<pre><code>## Maj: 1 Min: 8 Pat: 0</code></pre>
+</div>
+<div id="svlist-2" class="section level4">
+<h4>svlist</h4>
+<p>The <code>increment_version</code> method for <code>svlist</code> classes takes a character vector as argument <code>field</code> and an integer vector as argument <code>value</code>. Recycling occurs as for <code>set_version</code>/<code>reset_version</code> methods:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">examples &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;1.8.2-beta.1.10+somebuild&quot;</span>, <span class="st">&quot;2.4.6-8&quot;</span>)
+sem_versions &lt;-<span class="st"> </span><span class="kw">parse_version</span>(examples)
+## Incrementing
+<span class="co"># recycling on both arguments</span>
+<span class="kw">increment_version</span>(sem_versions, <span class="st">&quot;major&quot;</span>, 3L)</code></pre></div>
+<pre><code>## [1] Maj: 4 Min: 0 Pat: 0
+## 
+## [2] Maj: 5 Min: 0 Pat: 0</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># recycling on field argument</span>
+<span class="kw">increment_version</span>(sem_versions, <span class="st">&quot;minor&quot;</span>, <span class="kw">c</span>(3L, 4L))</code></pre></div>
+<pre><code>## [1] Maj: 1 Min: 11 Pat: 0
+## 
+## [2] Maj: 2 Min: 8 Pat: 0</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># recycling on value argument</span>
+<span class="kw">increment_version</span>(sem_versions, <span class="kw">c</span>(<span class="st">&quot;major&quot;</span>, <span class="st">&quot;patch&quot;</span>), 4L)</code></pre></div>
+<pre><code>## [1] Maj: 5 Min: 0 Pat: 0
+## 
+## [2] Maj: 2 Min: 4 Pat: 10</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">## Decrementing
+<span class="co"># recycling on both arguments</span>
+<span class="kw">increment_version</span>(sem_versions, <span class="st">&quot;major&quot;</span>, -1L)</code></pre></div>
+<pre><code>## [1] Maj: 0 Min: 0 Pat: 0
+## 
+## [2] Maj: 1 Min: 0 Pat: 0</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># recycling on field argument</span>
+<span class="kw">increment_version</span>(sem_versions, <span class="st">&quot;minor&quot;</span>, <span class="kw">c</span>(-3L, -4L))</code></pre></div>
+<pre><code>## [1] Maj: 1 Min: 5 Pat: 0
+## 
+## [2] Maj: 2 Min: 0 Pat: 0</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># recycling on value argument</span>
+<span class="kw">increment_version</span>(sem_versions, <span class="kw">c</span>(<span class="st">&quot;minor&quot;</span>), -4L)</code></pre></div>
+<pre><code>## [1] Maj: 1 Min: 4 Pat: 0
+## 
+## [2] Maj: 2 Min: 0 Pat: 0</code></pre>
+</div>
+</div>
 </div>
 
 
